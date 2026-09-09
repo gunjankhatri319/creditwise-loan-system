@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const API_BASE = 'http://localhost:5000/api';
+const API_BASE = '/api';
   let currentUserId = 'CW-8021';
 
   // 1. Session Auth (Connected to MongoDB /api/auth/login)
