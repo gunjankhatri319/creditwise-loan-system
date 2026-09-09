@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-const API_BASE = '/api';
+  const API_BASE = '/api';
   let currentUserId = 'CW-8021';
 
   // 1. Session Auth (Connected to MongoDB /api/auth/login)
@@ -90,7 +90,7 @@ const API_BASE = '/api';
   });
   document.addEventListener('click', () => { notifDrawer.style.display = 'none'; });
 
-  // 4. Payment Gateway Integration Engine (Syncs with MongoDB /api/gateway/pay)
+  // 4. Payment Gateway Integration Engine
   const initiatePayForm = document.getElementById('initiatePayForm');
   const paymentGatewayModal = document.getElementById('paymentGatewayModal');
   const gatewayDisplayAmount = document.getElementById('gatewayDisplayAmount');
@@ -183,7 +183,7 @@ const API_BASE = '/api';
     }
   });
 
-  // 5. Bureau Pull & Gauge Arc (Connected to MongoDB /api/bureau/check)
+  // 5. Bureau Pull & Gauge Arc
   const cibilForm = document.getElementById('cibilForm');
   const gaugeArc = document.getElementById('gaugeArc');
   const gaugeValue = document.getElementById('gaugeValue');
@@ -294,7 +294,7 @@ const API_BASE = '/api';
     }
   });
 
-  // 8. Loan Application Persistence Handler (Saves to MongoDB `loans` collection)
+  // 8. Loan Application Persistence Handler
   const loanForm = document.getElementById('loanForm');
   if (loanForm) {
     loanForm.addEventListener('submit', async (e) => {
