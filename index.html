@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CreditWise Studio | Banking & Payment Suite</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- Gateway Login Modal -->
+  <div class="modal-overlay" id="authModal">
+    <div class="modal-box">
+      <span class="auth-tag">Secure Client Gateway</span>
+      <h2 style="font-family: var(--font-serif); margin-bottom: 0.4rem;">CreditWise Atelier</h2>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">Authenticate credentials to open portal session.</p>
+      <form id="authForm">
+        <div class="field">
+          <label>Account ID / Handle</label>
+          <input type="text" id="authId" placeholder="e.g. Gunjan Khatri" required />
+        </div>
+        <div class="field">
+          <label>Security Key</label>
+          <input type="password" placeholder="••••••••" required />
+        </div>
+        <button type="submit" class="btn-aesthetic">Authenticate & Enter</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Interactive Payment Gateway Modal -->
+  <div class="modal-overlay" id="paymentGatewayModal" style="display: none;">
+    <div class="modal-box checkout-modal">
+      <div class="checkout-header">
+        <div>
+          <span class="auth-tag">CreditWise Pay Gateway</span>
+          <h3 style="font-family: var(--font-serif); margin-top: 0.2rem;">Complete Settlement</h3>
+        </div>
+        <div class="amount-badge">₹ <span id="gatewayDisplayAmount">0.00</span></div>
+      </div>
+
+      <div class="gateway-methods">
+        <button type="button" class="method-btn active" data-method="upi">UPI / QR</button>
+        <button type="button" class="method-btn" data-method="card">Card</button>
+        <button type="button" class="method-btn" data-method="netbanking">NetBanking</button>
+      </div>
+
+      <!-- UPI Tab -->
+      <div class="gateway-tab-content" id="tab-upi">
+        <div class="field">
+          <label>UPI ID / VPA</label>
+          <input type="text" id="upiVpa" placeholder="username@okhdfcbank" />
+        </div>
+        <div class="qr-preview-box">
+          <div class="qr-mock">
+            <div class="qr-grid"></div>
+            <span>Scan with any UPI App</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card Tab -->
+      <div class="gateway-tab-content" id="tab-card" style="display: none;">
+        <div class="field">
+          <label>Card Number</label>
+          <input type="text" id="gatewayCardNum" placeholder="4532 •••• •••• 8821" maxlength="19" />
+        </div>
+        <div style="display: flex; gap: 0.75rem;">
+          <div class="field" style="flex: 1;">
+            <label>Expiry</label>
+            <input type="text" placeholder="MM/YY" maxlength="5" />
+          </div>
+          <div class="field" style="flex: 1;">
+            <label>CVV</label>
+            <input type="password" placeholder="•••" maxlength="3" />
+          </div>
+        </div>
+      </div>
+
+      <!-- NetBanking Tab -->
+      <div class="gateway-tab-content" id="tab-netbanking" style="display: none;">
+        <div class="field">
+          <label>Select Financial Institution</label>
+          <select id="gatewayBankSelect">
+            <option value="HDFC">HDFC Bank Premier</option>
+            <option value="ICICI">ICICI Corporate Bank</option>
+            <option value="SBI">State Bank of India</option>
+            <option value="AXIS">Axis Bank</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="gateway-footer">
+        <button class="btn-aesthetic" id="executeGatewayPay">Authorize & Pay</button>
+        <button type="button" class="btn-text" id="cancelGatewayPay" style="margin-top: 0.6rem; width: 100%;">Cancel Settlement</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Two-Factor Security OTP Modal -->
+  <div class="modal-overlay" id="otpModal" style="display: none;">
+    <div class="modal-box" style="max-width: 360px; text-align: center;">
+      <span class="auth-tag">Verification Check</span>
+      <h3 style="font-family: var(--font-serif); margin: 0.4rem 0;">Two-Factor Authorization</h3>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.2rem;">Enter the 6-digit code transmitted to registered device.</p>
+      <div class="field">
+        <input type="text" id="otpInput" placeholder="0 0 0 0 0 0" maxlength="6" style="text-align: center; font-size: 1.3rem; letter-spacing: 0.3em;" />
+      </div>
+      <button class="btn-aesthetic" id="verifyOtpBtn">Confirm & Release</button>
+      <button style="background: none; border: none; margin-top: 0.8rem; font-size: 0.8rem; color: var(--text-muted); cursor: pointer;" onclick="document.getElementById('otpModal').style.display='none'">Cancel</button>
+    </div>
+  </div>
+
+  <!-- App Layout -->
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="brand">CreditWise.</div>
+      <nav class="nav-links">
+        <button class="nav-btn active" data-view="overview">Dashboard</button>
+        <button class="nav-btn" data-view="gateway">Payment Gateway</button>
+        <button class="nav-btn" data-view="cibil">Bureau & Simulator</button>
+        <button class="nav-btn" data-view="underwriting">Loan Underwriter</button>
+        <button class="nav-btn" data-view="amortization">Amortization Ledger</button>
+        <button class="nav-btn" data-view="savings">Savings & Yield Hub</button>
+        <button class="nav-btn" data-view="vault">Document Vault (KYC)</button>
+        <button class="nav-btn" data-view="transfers">Disbursements</button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <div class="avatar" id="userAvatar">G</div>
+          <div>
+            <p style="font-size: 0.85rem; font-weight: 600;" id="userProfileName">Gunjan Khatri</p>
+            <span style="font-size: 0.72rem; color: var(--text-muted);">Premier Atelier</span>
+          </div>
+        </div>
+        <button style="background:none; border:none; cursor:pointer; font-size: 0.8rem; color: var(--text-muted);" id="logoutBtn">Exit</button>
+      </div>
+    </aside>
+
+    <main class="content-panel">
+      <!-- Top Actions -->
+      <div style="display: flex; justify-content: flex-end; margin-bottom: 1.5rem;">
+        <div class="top-actions">
+          <button class="notif-bell" id="notifToggle">
+            Notifications
+            <span class="notif-dot"></span>
+          </button>
+          <div class="notif-drawer" id="notifDrawer">
+            <h4 style="font-size: 0.85rem; margin-bottom: 0.5rem;">Atelier Bulletins</h4>
+            <div class="notif-item">Quarterly yield credited: <strong>+ ₹ 4,120</strong></div>
+            <div class="notif-item">Bureau refresh: CIBIL updated to <strong>785</strong></div>
+            <div class="notif-item">Payment Gateway API: SSL 256-Bit Active.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 1: OVERVIEW -->
+      <section id="overview" class="view active">
+        <div class="view-header">
+          <div>
+            <h1>Financial Portfolio</h1>
+            <p>Liquidity reserves, live credit rating, and transaction records</p>
+          </div>
+          <span style="background: var(--surface-alt); padding: 0.35rem 0.8rem; border-radius: 20px; font-size: 0.75rem; border: 1px solid var(--border); color: var(--primary);">Tier 1 • Active</span>
+        </div>
+
+        <div class="cards-grid">
+          <div class="glass-card">
+            <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Vault Holdings</span>
+            <div class="metric">₹ <span id="dashVaultBalance">3,84,520</span><span style="font-size: 1.2rem; color: var(--text-muted);">.50</span></div>
+            <div style="display: flex; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 0.6rem; font-size: 0.8rem; color: var(--text-muted);">
+              <span>A/C: •••• 7109</span>
+              <span>Reserve Vault</span>
+            </div>
+          </div>
+
+          <div class="glass-card">
+            <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Credit Appraisal</span>
+            <div class="metric accent-color"><span id="dashCibilScore">785</span> <span style="font-size: 1rem; color: var(--text-muted);">/ 900</span></div>
+            <div style="display: flex; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 0.6rem; font-size: 0.8rem; color: var(--text-muted);">
+              <span id="dashCibilStatus">Standing: Prime</span>
+              <span id="dashPreApproved">Power: ₹ 15,00,000</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3>Transaction Ledger</h3>
+            <div style="display: flex; gap: 0.6rem;">
+              <input type="text" id="ledgerSearch" placeholder="Search reference..." style="padding: 0.4rem 0.8rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.8rem;" />
+              <button class="btn-aesthetic" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.8rem;" id="exportCsvBtn">Export CSV</button>
+            </div>
+          </div>
+          <table class="aesthetic-table" id="ledgerTable">
+            <thead>
+              <tr>
+                <th>Reference</th>
+                <th>Counterparty</th>
+                <th>Classification</th>
+                <th>Date</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>#CW-7721</td>
+                <td>Design Studio Royalty</td>
+                <td><span class="pill in">Credit</span></td>
+                <td>06 Sep 2026</td>
+                <td style="color: var(--primary); font-weight: 600;">+ ₹ 92,000</td>
+              </tr>
+              <tr>
+                <td>#CW-7680</td>
+                <td>Studio Loan Amortization</td>
+                <td><span class="pill out">Debit</span></td>
+                <td>01 Sep 2026</td>
+                <td>- ₹ 24,150</td>
+              </tr>
+              <tr>
+                <td>#CW-7599</td>
+                <td>Artisan Materials Purchase</td>
+                <td><span class="pill out">Debit</span></td>
+                <td>28 Aug 2026</td>
+                <td>- ₹ 5,420</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- VIEW 2: PAYMENT GATEWAY INTEGRATION -->
+      <section id="gateway" class="view">
+        <div class="view-header">
+          <div>
+            <h1>Payment Gateway Integration</h1>
+            <p>Direct API processing for instant deposits, collections, and EMI settlements</p>
+          </div>
+          <span style="background: var(--surface-alt); padding: 0.35rem 0.8rem; border-radius: 20px; font-size: 0.75rem; border: 1px solid var(--border); color: var(--primary);">256-Bit SSL Encrypted</span>
+        </div>
+
+        <div class="cards-grid">
+          <!-- Gateway Checkout Trigger -->
+          <div class="glass-card">
+            <h3>Initiate Merchant Payment / Deposit</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+              Simulate checkout flow for account top-up or third-party merchant dues.
+            </p>
+            <form id="initiatePayForm">
+              <div class="field">
+                <label>Purpose of Payment</label>
+                <select id="payPurpose">
+                  <option value="Deposit">Vault Account Deposit</option>
+                  <option value="EMI Repayment">Monthly Loan EMI Repayment</option>
+                  <option value="Merchant Order">Artisan Supplier Invoice</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Amount to Process (₹)</label>
+                <input type="number" id="payAmountInput" placeholder="e.g. 5000" min="10" required />
+              </div>
+              <div class="field">
+                <label>Customer Email for Receipt</label>
+                <input type="email" id="payCustomerEmail" placeholder="client@creditwise.in" required />
+              </div>
+              <button type="submit" class="btn-aesthetic" style="margin-top: 0.5rem;">Launch Gateway Checkout</button>
+            </form>
+          </div>
+
+          <!-- Gateway Live Metrics & Status -->
+          <div class="glass-card">
+            <h3>Gateway Node Telemetry</h3>
+            <ul class="meta-list" style="margin-top: 1rem;">
+              <li><span>API Status:</span> <strong>Operational (99.98%)</strong></li>
+              <li><span>Active Gateway:</span> <strong>CreditWise Core Unified Engine</strong></li>
+              <li><span>Settlement Window:</span> <strong>T+0 Instant Routing</strong></li>
+              <li><span>PCI-DSS Compliance:</span> <strong>Certified Level 1</strong></li>
+            </ul>
+
+            <div style="background: var(--surface-alt); padding: 1.2rem; border-radius: var(--radius-sm); margin-top: 1.5rem;">
+              <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Last Processed Token</span>
+              <div style="font-family: monospace; font-size: 0.9rem; margin-top: 0.4rem; word-break: break-all;" id="lastPayToken">
+                tok_live_cwise_9921480029
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 3: CIBIL BUREAU & SIMULATOR -->
+      <section id="cibil" class="view">
+        <div class="view-header">
+          <div>
+            <h1>Bureau & Simulation Studio</h1>
+            <p>Perform live soft pulls and simulate hypothetical credit decisions</p>
+          </div>
+        </div>
+
+        <div class="cards-grid">
+          <div class="glass-card">
+            <h3>PAN Bureau Inquiry</h3>
+            <form id="cibilForm">
+              <div class="field">
+                <label>Tax Identification (PAN)</label>
+                <input type="text" id="cibilPan" placeholder="ABCDE1234F" maxlength="10" style="text-transform: uppercase;" required />
+              </div>
+              <div class="field">
+                <label>Date of Birth</label>
+                <input type="date" required />
+              </div>
+              <button type="submit" class="btn-aesthetic" id="cibilBtn">Query Bureau Record</button>
+            </form>
+
+            <div style="margin-top: 2rem;">
+              <div class="gauge-wrapper">
+                <svg width="200" height="120" viewBox="0 0 200 120">
+                  <path class="gauge-bg" d="M 20 100 A 80 80 0 0 1 180 100" />
+                  <path class="gauge-fill" id="gaugeArc" d="M 20 100 A 80 80 0 0 1 180 100" />
+                </svg>
+                <div class="gauge-score" id="gaugeValue">785</div>
+              </div>
+              <p style="text-align: center; font-size: 0.85rem; font-weight: 600; margin-top: 0.5rem;" id="gaugeBand">Prime / Excellent</p>
+            </div>
+          </div>
+
+          <div class="glass-card">
+            <h3>Credit Score Simulator</h3>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.5rem;">Simulate score fluctuations based on credit behavior.</p>
+            
+            <div class="field">
+              <label>Revolving Card Utilization: <strong id="simUtilVal">15%</strong></label>
+              <input type="range" id="simUtil" min="5" max="95" value="15" />
+            </div>
+
+            <div class="field">
+              <label>Missed Payment Penalties: <strong id="simLateVal">0 Events</strong></label>
+              <input type="range" id="simLate" min="0" max="4" value="0" />
+            </div>
+
+            <div style="background: var(--surface-alt); padding: 1.2rem; border-radius: var(--radius-sm); margin-top: 1.5rem;">
+              <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Projected 6-Month Score</span>
+              <div style="font-family: var(--font-serif); font-size: 2.2rem; color: var(--primary);" id="simulatedResult">785</div>
+              <span style="font-size: 0.8rem; color: var(--text-muted);" id="simDelta">(No structural change)</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 4: LOAN UNDERWRITING -->
+      <section id="underwriting" class="view">
+        <div class="view-header">
+          <div>
+            <h1>Automated Loan Underwriting</h1>
+            <p>Determine borrowing eligibility using Debt-to-Income (DTI) formulas</p>
+          </div>
+        </div>
+
+        <div class="cards-grid">
+          <div class="glass-card">
+            <h3>Underwriting Variables</h3>
+            <form id="underwriteForm">
+              <div class="field">
+                <label>Net Monthly Revenue / Salary (₹)</label>
+                <input type="number" id="uwMonthlyIncome" value="95000" required />
+              </div>
+              <div class="field">
+                <label>Existing Monthly Debt Payments (₹)</label>
+                <input type="number" id="uwExistingDebt" value="24150" required />
+              </div>
+              <button type="button" class="btn-aesthetic" id="calcEligibilityBtn">Evaluate Lending Capacity</button>
+            </form>
+          </div>
+
+          <div class="glass-card" id="uwResultsCard">
+            <h3>Appraisal Decision</h3>
+            <div style="margin: 1.2rem 0;">
+              <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted);">Calculated DTI Ratio</span>
+              <div style="font-family: var(--font-serif); font-size: 2rem;" id="uwDtiDisplay">25.4%</div>
+            </div>
+            <ul style="list-style: none; font-size: 0.85rem; line-height: 2;">
+              <li>Max Monthly Capacity (40% Cap): <strong id="uwMaxEmi">₹ 38,000</strong></li>
+              <li>Remaining EMI Room: <strong id="uwRoomEmi">₹ 13,850</strong></li>
+              <li>Estimated Borrowing Power (5-Yr): <strong id="uwLoanPower">₹ 6,55,000</strong></li>
+              <li>Underwriting Status: <span class="pill in" id="uwStatus">Qualified</span></li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 5: AMORTIZATION LEDGER -->
+      <section id="amortization" class="view">
+        <div class="view-header">
+          <div>
+            <h1>Amortization Schedule</h1>
+            <p>Month-by-month principal vs. interest breakdown</p>
+          </div>
+        </div>
+
+        <div class="glass-card">
+          <div style="display: flex; gap: 1rem; align-items: flex-end; margin-bottom: 1.5rem;">
+            <div class="field" style="margin-bottom:0; flex:1;">
+              <label>Capital (₹)</label>
+              <input type="number" id="amortPrincipal" value="500000" />
+            </div>
+            <div class="field" style="margin-bottom:0; flex:1;">
+              <label>Rate (% p.a.)</label>
+              <input type="number" step="0.1" id="amortRate" value="9.5" />
+            </div>
+            <div class="field" style="margin-bottom:0; flex:1;">
+              <label>Tenure (Years)</label>
+              <input type="number" id="amortYears" value="2" />
+            </div>
+            <button class="btn-aesthetic" style="width: auto; padding: 0.75rem 1.4rem;" id="generateAmortBtn">Generate</button>
+          </div>
+
+          <div style="max-height: 380px; overflow-y: auto;">
+            <table class="aesthetic-table" id="amortTable">
+              <thead>
+                <tr>
+                  <th>Month</th>
+                  <th>Installment (EMI)</th>
+                  <th>Principal Paid</th>
+                  <th>Interest Paid</th>
+                  <th>Outstanding Balance</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 6: SAVINGS & YIELD HUB -->
+      <section id="savings" class="view">
+        <div class="view-header">
+          <div>
+            <h1>Savings Atelier & Yield Engine</h1>
+            <p>Card parameter controls and term deposit projections</p>
+          </div>
+        </div>
+
+        <div class="cards-grid">
+          <div class="glass-card">
+            <h3>Virtual Reserve Card</h3>
+            <div class="minimal-card" id="visualCard" style="margin: 1rem 0;">
+              <span style="font-size: 0.75rem; letter-spacing: 0.05em;">CreditWise Premier</span>
+              <div class="card-num">•••• •••• •••• 9924</div>
+              <div style="display:flex; justify-content:space-between; font-size:0.75rem;">
+                <span>VALID: 09/29</span>
+                <span>CVV: •••</span>
+              </div>
+            </div>
+
+            <div class="switch-row">
+              <span style="font-size: 0.85rem;">Freeze Card Instantly</span>
+              <label class="switch">
+                <input type="checkbox" id="freezeToggle" />
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="switch-row">
+              <span style="font-size: 0.85rem;">Enable Online/POS Transactions</span>
+              <label class="switch">
+                <input type="checkbox" checked />
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="glass-card">
+            <h3>Term Deposit (FD) Modeler</h3>
+            <div class="field">
+              <label>Deposit Allocation (₹)</label>
+              <input type="number" id="fdPrincipal" value="100000" />
+            </div>
+            <div class="field">
+              <label>Lock Tenure (Months)</label>
+              <select id="fdMonths">
+                <option value="12">12 Months (6.8% Yield)</option>
+                <option value="24">24 Months (7.2% Yield)</option>
+                <option value="36">36 Months (7.5% Yield)</option>
+              </select>
+            </div>
+            <div style="background: var(--surface-alt); padding: 1.2rem; border-radius: var(--radius-sm); margin-top: 1rem;">
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Maturity Value at Term End</span>
+              <div style="font-family: var(--font-serif); font-size: 2rem; color: var(--primary);" id="fdMaturityResult">₹ 1,07,015</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 7: DOCUMENT VAULT (KYC) -->
+      <section id="vault" class="view">
+        <div class="view-header">
+          <div>
+            <h1>Document Vault & KYC</h1>
+            <p>Cryptographically notarized identity records</p>
+          </div>
+        </div>
+
+        <div class="cards-grid">
+          <div class="glass-card">
+            <h3>Deposit New Record</h3>
+            <div style="border: 2px dashed var(--border); padding: 2.5rem; text-align: center; border-radius: var(--radius-sm); cursor: pointer;" id="dropZone">
+              <p style="font-size: 0.85rem; color: var(--text-muted);">Drag & drop KYC documents or click to browse</p>
+              <input type="file" id="fileInput" style="display: none;" />
+            </div>
+          </div>
+
+          <div class="glass-card">
+            <h3>Notarized Records</h3>
+            <ul style="list-style: none; font-size: 0.85rem; line-height: 2.4;" id="docList">
+              <li style="display:flex; justify-content:space-between; border-bottom: 1px dashed var(--border);">
+                <span>PAN_Card_Notarized.pdf</span>
+                <span class="pill in">Verified ✓</span>
+              </li>
+              <li style="display:flex; justify-content:space-between; border-bottom: 1px dashed var(--border);">
+                <span>Bank_Statement_6M.pdf</span>
+                <span class="pill in">Verified ✓</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 8: DISBURSEMENTS & TRANSFERS -->
+      <section id="transfers" class="view">
+        <div class="view-header">
+          <div>
+            <h1>Disbursements & Transfers</h1>
+            <p>Execute settlements under Two-Factor Security</p>
+          </div>
+        </div>
+
+        <div class="glass-card" style="max-width: 520px;">
+          <form id="transferForm">
+            <div class="field">
+              <label>Beneficiary Entity</label>
+              <input type="text" id="beneficiaryName" placeholder="Recipient Legal Title" required />
+            </div>
+            <div class="field">
+              <label>Account Number</label>
+              <input type="text" placeholder="12-16 Digit Identifier" required />
+            </div>
+            <div class="field">
+              <label>Routing IFSC</label>
+              <input type="text" placeholder="CWIS0009214" required />
+            </div>
+            <div class="field">
+              <label>Volume (₹)</label>
+              <input type="number" id="transferAmt" placeholder="0.00" min="10" required />
+            </div>
+            <button type="submit" class="btn-aesthetic">Authorize Settlement (2FA)</button>
+          </form>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+# Dependencies (never push to GitHub)
+node_modules/
+
+# Environment secrets
+.env
+
+# System/OS artifacts
+.DS_Store
+Thumbs.db
