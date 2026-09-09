@@ -11,6 +11,7 @@ const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/creditwise
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
+
 mongoose.connect(MONGO_URI)
   .then(() => {
     console.log('MongoDB Connected to CreditWise Database');
@@ -152,14 +153,13 @@ app.post('/api/bureau/check', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-app.get('*', (req, res) => {
+
+// Fallback catch-all middleware (safely handles routing without path errors)
+app.use((req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.listen(PORT, () => {
-  console.log(`CreditWise MongoDB Server running on port ${PORT}`);
-});
-
+// Start single listener
 app.listen(PORT, () => {
   console.log(`CreditWise MongoDB Server running on port ${PORT}`);
 });
